@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"time"
+	"fmt"
 
 	"tinyurl/helpers"
 	"tinyurl/models"
@@ -16,6 +17,21 @@ import (
 
 type URLHandler struct {
 	Collection *mongo.Collection
+	Queue chan models.URL
+}
+
+func (h *URLHandler) StartWorker(workerCount int) {
+	fmt.Printf("%d Workers deployed!", workerCount)
+	for i := 0; i < workerCount; i++ {
+		go func(workerId int) {
+			for url := range h.Queue {
+				_, err := h.Collection.InsertOne(context.TODO(), url)
+				if err != nil {
+					fmt.Printf("Worker with id: %d is failing", workerId)
+				} 
+			}
+		} (i)
+	}
 }
 
 func (h *URLHandler) ToTinyURL (c *gin.Context) {
@@ -35,11 +51,12 @@ func (h *URLHandler) ToTinyURL (c *gin.Context) {
 	url.CreatedAt = time.Now()
 
 	// save request to the database
-	_, err := h.Collection.InsertOne(context.TODO(), url)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Error saving to the database",
-		})
+	// instead of waiting for mongodb connection we simply
+	// put the data into Queue (Channel)
+	select {
+	case h.Queue <- url:
+	default: 
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Server too busy"})
 		return
 	}
 
