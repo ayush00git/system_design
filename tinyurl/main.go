@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"log"
 
-	"tinyurl/internals/db"
+	"tinyurl/helpers"
 )
 
 func main() {
-	uri := db.GetEnv()
+	uri := helpers.GetEnv()
 
-	db.ConnectToMongo(uri);
+	helpers.ConnectToMongo(uri);
 
 	srv := &http.Server{
 		Addr: ":8080",

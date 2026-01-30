@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"tinyurl/internals/helpers"
-	"tinyurl/internals/models"
+	"tinyurl/models"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -66,7 +65,7 @@ func (h *URLHandler) GenerateTinyURL (c *gin.Context) {
 	}
 
 	url.ID = primitive.NewObjectID()
-	url.ShortCode = helpers.GenerateCode()
+	url.ShortCode = GenerateCode()
 	url.CreatedAt = time.Now()
 
 	// save request to the database
