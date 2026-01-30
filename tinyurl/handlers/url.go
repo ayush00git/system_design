@@ -2,58 +2,23 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"time"
 
+	"tinyurl/helpers"
 	"tinyurl/models"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type URLHandler struct {
 	Collection *mongo.Collection
 }
 
-func (h *URLHandler) ToTinyURL(w http.ResponseWriter, r *http.Request) {
-
-	// url data structure which handles url type struct
-	var url models.URL
-
-	// decoding the json response sent by user
-	if err := json.NewDecoder(r.Body).Decode(&url); err != nil {
-		http.Error(w, "Error decoding user's request", http.StatusInternalServerError)
-		return
-	}
-
-	// defining the mongo fields
-	url.ID = primitive.NewObjectID()
-	url.CreatedAt = time.Now()
-
-	// get the 'LongURL' and generate a 'TinyURL' from it
-
-	// send it to mongodb
-	_, err := h.Collection.InsertOne(context.TODO(), url)
-	if err != nil {
-		http.Error(w, "Error inserting the document to mongodb", http.StatusInternalServerError)
-		return
-	}
-	// return some response
-	response := map[string]interface{} {
-		"message": "tiny url generated successfully!",
-		"url": url,
-	}
-
-	
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, "Error encoding server's response", http.StatusInternalServerError)
-		return
-	}
-}
-
-func (h *URLHandler) GenerateTinyURL (c *gin.Context) {
+func (h *URLHandler) ToTinyURL (c *gin.Context) {
 	var url models.URL
 
 	// decoding the user's request body
@@ -65,7 +30,8 @@ func (h *URLHandler) GenerateTinyURL (c *gin.Context) {
 	}
 
 	url.ID = primitive.NewObjectID()
-	url.ShortCode = GenerateCode()
+	url.TinyId = helpers.GenerateCode(6)
+	url.TinyURL = "http://localhost:8080/" + url.TinyId
 	url.CreatedAt = time.Now()
 
 	// save request to the database
@@ -84,6 +50,21 @@ func (h *URLHandler) GenerateTinyURL (c *gin.Context) {
 	})
 }
 
-func (h *URLHandler) HitTinyURL (w http.ResponseWriter, r *http.Request) {
+func (h *URLHandler) HitTinyURL (c *gin.Context) {
+	tinyId := c.Param("tinyId")
 
+	var foundURL models.URL
+
+	filter := bson.M{"tinyId": tinyId}
+	err := h.Collection.FindOne(context.TODO(), filter).Decode(&foundURL)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Finding the redirection url",
+		})
+	}
+
+	// http.StatusFound or status code 302 is a temporary redirect used for keeping analytics,
+	// status code 301 can be used for a permanent redirection and would be fast, but we'll
+	// lost a track of clicks
+	c.Redirect(http.StatusFound, foundURL.LongURL)	
 }

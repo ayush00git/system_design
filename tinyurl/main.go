@@ -1,24 +1,30 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
 	"log"
 
 	"tinyurl/helpers"
+	"tinyurl/handlers"
+	"tinyurl/routes"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	uri := helpers.GetEnv()
 
-	helpers.ConnectToMongo(uri);
+	// connection function that returns the collection
+	collection := helpers.ConnectToMongo(uri);
 
-	srv := &http.Server{
-		Addr: ":8080",
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("Hey this is the home route")
-		}),
-	}
+	// matching handlers to the mongo collections
+	urlHandler := &handlers.URLHandler{Collection: collection}
 
-	log.Fatal(srv.ListenAndServe())
+	// initializing a gin router
+	r := gin.Default()
+
+	// registering the routes
+	routes.URLRoute(r, urlHandler)
+
+	log.Println("Server running on port 8080....")
+	log.Fatal(r.Run(":8080"))
 }

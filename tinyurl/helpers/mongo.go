@@ -25,7 +25,7 @@ func GetEnv() (string) {
 	return uri
 }
 
-func ConnectToMongo (uri string) {
+func ConnectToMongo (uri string) (*mongo.Collection) {
 	// checking the connection timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -45,4 +45,5 @@ func ConnectToMongo (uri string) {
 	fmt.Println("Connected to mongodb")
 	
 	// selecting the dbs and collections
+	return client.Database("tinyurl").Collection("urls")
 }
