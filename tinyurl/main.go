@@ -19,7 +19,7 @@ func main() {
 
 	// creating a buffer of 5000, means the server will accept 
 	// 5000 requests even if the mongodb is not connected
-	queue := make(chan models.URL, 5000)
+	queue := make(chan models.URL, 15000)
 
 	// matching handlers to the mongo collections
 	urlHandler := &handlers.URLHandler{

@@ -55,7 +55,7 @@ func (h *URLHandler) ToTinyURL (c *gin.Context) {
 	// put the data into Queue (Channel)
 	select {
 	case h.Queue <- url:
-	default: 
+	default:
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Server too busy"})
 		return
 	}
