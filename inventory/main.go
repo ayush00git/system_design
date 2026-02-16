@@ -9,8 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var Inventory int = 100
-
 func main() {
 	// db connection
 	orderCollection := db.ConnectToMongo()
@@ -18,7 +16,7 @@ func main() {
 	// defining the handlers and collections
 	orderHandler := &handlers.OrderCollection {
 		Collection: orderCollection,
-		Inventory: 100,
+		Inventory: 5,
 	}
 
 	r := gin.Default()

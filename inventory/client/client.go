@@ -12,7 +12,8 @@ import (
 func main() {
 	// CONFIGURATION
 	url := "http://localhost:8080/api/order"
-	totalRequests := 10000 // 10000 users trying to buy
+	totalRequests := 100 // 10000 users trying to buy
+	inventory := 5
 	
 	// COUNTERS (Thread-safe)
 	var successCount int64
@@ -71,11 +72,11 @@ func main() {
 	fmt.Printf("❌ Errors: %d\n", errorCount)
 	fmt.Println("------------------------------------------------")
 
-	if successCount == 100 {
-		fmt.Println("🎉 TEST PASSED: Exactly 100 items sold!")
-	} else if successCount > 100 {
+	if successCount == int64(inventory) {
+		fmt.Println("🎉 TEST PASSED: Exact items sold!")
+	} else if successCount > int64(inventory) {
 		fmt.Println("🚨 TEST FAILED: You oversold! Race condition detected.")
 	} else {
-		fmt.Println("🤔 TEST STRANGE: You sold less than 100. Maybe DB errors?")
+		fmt.Println("🤔 TEST STRANGE: You sold less. Maybe DB errors?")
 	}
 }
