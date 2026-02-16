@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"context"
+	"sync"
 
 	"inventory/models"
 
@@ -13,6 +14,8 @@ import (
 
 type OrderCollection struct {
 	Collection *mongo.Collection
+	Inventory int
+	mutex sync.Mutex
 }
 
 func (h *OrderCollection) HealthRoute(c *gin.Context) {
@@ -23,17 +26,33 @@ func (h *OrderCollection) PlaceOrder (c *gin.Context) {
 	var order models.Order
 
 	if err := c.ShouldBindJSON(&order); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "decoding the response"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid request body"})
+		return
 	}
+	
+	// give the key to a specific goroutine 
+	h.mutex.Lock()
+	if h.Inventory <= 0 {
+		h.mutex.Unlock()
+		c.JSON(http.StatusConflict, gin.H{"message": "sold out!"})
+		return
+	}
+	h.mutex.Unlock()
+
+	h.Inventory--
+	leftItems := h.Inventory
 
 	order.ID = primitive.NewObjectID()
 	order.ProductName = "Apple IPhone 16"
 
-	unit, err := h.Collection.InsertOne(context.TODO(), order)
+	_, err := h.Collection.InsertOne(context.TODO(), order)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "Error inserting to the db"})
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{"message": "Order placed!", "order_details": unit})
+	c.JSON(http.StatusAccepted, gin.H{
+		"message": "Order placed!", 
+		"left_items": leftItems,
+	})
 }
