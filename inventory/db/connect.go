@@ -24,7 +24,7 @@ func GetMongoURI() string {
 	return uri
 }
 
-func ConnectToMongo() *mongo.Collection {
+func ConnectToMongo() *mongo.Database {
 	// ctx, client, ping, return the collection
 
 	uri := GetMongoURI()
@@ -42,6 +42,6 @@ func ConnectToMongo() *mongo.Collection {
 	}
 	fmt.Println("Connected to MongoDB!")
 
-	clc := client.Database("order").Collection("orders")
-	return clc
+	database := client.Database("test")
+	return database
 }
