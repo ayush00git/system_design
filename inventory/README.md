@@ -33,3 +33,7 @@ Write the **Go function** that handles the purchase.
 ```bash
 git checkout 12a2e6d5f3dd68c7c427cdbc3588dff05959d23e
 ```
+
+- The problem that now exists that `mutex` can be used to control the atomicity but only if the variable is on the server, but if we spawn multiple servers, that what happens in real life, the variable would be local to every server, so if inventory has 100 units and we have 2 servers live, they will sell 100 each, totalling a 200 units sold.
+
+- For solving this we need database atomicity instead (v2)
