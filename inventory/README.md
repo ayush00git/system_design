@@ -27,3 +27,9 @@ Write the **Go function** that handles the purchase.
 *(Don't worry about the database for now—just show me how you handle the in-memory logic in Go).*
 
 **Go ahead.**
+
+
+- The Mutex version 
+```bash
+git checkout 12a2e6d5f3dd68c7c427cdbc3588dff05959d23e
+```

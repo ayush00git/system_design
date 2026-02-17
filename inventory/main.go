@@ -16,7 +16,7 @@ func main() {
 	// defining the handlers and collections
 	orderHandler := &handlers.OrderCollection {
 		Collection: orderCollection,
-		Inventory: 5,
+		Inventory: 100,
 	}
 
 	r := gin.Default()
