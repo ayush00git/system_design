@@ -13,22 +13,23 @@ func main() {
 	// db connection
 	database := db.ConnectToMongo()
 
-	orderCollection := database.Collection("orders")
-	inventoryCollection := database.Collection("inventory")
+	orderCollec := database.Collection("orders")
+	inventoryCollec := database.Collection("inventory")
 
 	// defining the handlers and collections
-	orderHandler := &handlers.OrderHandler {
-		Collection: orderCollection,
+	orderHandler := &handlers.OrderHandler{
+		OrderCollection: orderCollec,
+		InventoryCollection: inventoryCollec,
 	}
 
-	inventoryHandler := &handlers.InventoryHandler{
-		Collection: inventoryCollection,
-	}
+	// inventoryHandler := &handlers.InventoryHandler {
+	// 	Collection: inventoryCollection,
+	// }
 
 	r := gin.Default()
 
 	routes.OrderRoute(r, orderHandler)
-	routes.InventoryRoutes(r, inventoryHandler)
+	// routes.InventoryRoutes(r, inventoryHandler)
 
 	log.Fatal(r.Run())
 }

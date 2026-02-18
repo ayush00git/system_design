@@ -13,7 +13,8 @@ import (
 )
 
 type OrderHandler struct {
-	Collection *mongo.Collection
+	OrderCollection *mongo.Collection
+	InventoryCollection	*mongo.Collection
 }
 
 func (h *OrderHandler) HealthRoute(c *gin.Context) {
@@ -36,9 +37,9 @@ func (h *OrderHandler) PlaceOrder (c *gin.Context) {
 	update := bson.M{
 		"$inc": bson.M{"units": -1},
 	}
-	// give the key to a specific goroutine
+
 	var updatedInventory models.Inventory
-	err := h.Collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&updatedInventory)
+	err := h.InventoryCollection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&updatedInventory)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "sold out!"})
 		return
@@ -49,9 +50,9 @@ func (h *OrderHandler) PlaceOrder (c *gin.Context) {
 	order.ID = primitive.NewObjectID()
 	order.ProductName = "Apple IPhone 16"
 
-	_, err = h.Collection.InsertOne(context.TODO(), order)
+	_, err = h.OrderCollection.InsertOne(context.TODO(), order)
 	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "sold out!"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sold out!"})
 		return
 	}
 
